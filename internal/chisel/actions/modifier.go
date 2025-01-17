@@ -2,11 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
-	"reflect"
-	"strings"
 )
 
 type CELModifier struct {

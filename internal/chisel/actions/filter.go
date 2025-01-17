@@ -2,6 +2,7 @@ package actions
 
 import (
 	"fmt"
+
 	"github.com/google/cel-go/cel"
 	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
 )
@@ -77,7 +78,6 @@ func createCELEnvironment(storage Storage) (*cel.Env, error) {
 		cel_extensions.GetArrayFunc(storage),
 		cel_extensions.GetSetFunc(storage),
 	)
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to create CEL environment: %w", err)
 	}

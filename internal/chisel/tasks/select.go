@@ -3,12 +3,13 @@ package tasks
 import (
 	"bufio"
 	"fmt"
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
-	"github.com/zwergpro/pg-chisel/internal/dump"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 	"io"
 	"log"
 	"time"
+
+	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/dump"
+	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
 // SelectTask reads from a source, applies a filter, and for each matching line

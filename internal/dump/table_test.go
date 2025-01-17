@@ -1,8 +1,9 @@
 package dump
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTableMetaParsing(t *testing.T) {

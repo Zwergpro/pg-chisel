@@ -2,9 +2,10 @@ package dump
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
-	"path/filepath"
 )
 
 // loadDirectoryDump handles loading metadata for a directory dump.

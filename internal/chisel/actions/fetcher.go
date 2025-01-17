@@ -2,12 +2,13 @@ package actions
 
 import (
 	"fmt"
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/common/types/ref"
-	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/google/cel-go/cel"
+	"github.com/google/cel-go/common/types/ref"
+	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
 )
 
 // CELFetcher fetches data using CEL expressions and manages buffered results.

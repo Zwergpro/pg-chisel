@@ -3,10 +3,11 @@ package dumpio
 import (
 	"bytes"
 	"fmt"
-	"github.com/klauspost/compress/gzip"
 	"io"
 	"log"
 	"os"
+
+	"github.com/klauspost/compress/gzip"
 )
 
 // GzipReader is responsible for reading gzip-compressed files.

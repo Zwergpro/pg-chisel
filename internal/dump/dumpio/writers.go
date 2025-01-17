@@ -3,9 +3,10 @@ package dumpio
 import (
 	"bytes"
 	"fmt"
-	"github.com/klauspost/compress/gzip"
 	"io"
 	"os"
+
+	"github.com/klauspost/compress/gzip"
 )
 
 // GzipWriter is responsible for writing gzip-compressed data to a file.

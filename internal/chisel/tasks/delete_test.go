@@ -1,14 +1,15 @@
 package tasks
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
-	"github.com/zwergpro/pg-chisel/internal/dump"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 	"slices"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/dump"
+	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
 func TestDeleteTask(t *testing.T) {

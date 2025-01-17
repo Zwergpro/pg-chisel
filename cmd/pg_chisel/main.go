@@ -3,6 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+
 	"github.com/fatih/color"
 	"github.com/go-pkgz/lgr"
 	"github.com/jessevdk/go-flags"
@@ -11,10 +16,6 @@ import (
 	"github.com/zwergpro/pg-chisel/internal/chisel/tasks"
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump"
-	"io"
-	"log"
-	"os"
-	"path/filepath"
 )
 
 var opts struct {
@@ -64,7 +65,6 @@ func main() {
 }
 
 func run() error {
-
 	setupLog(true)
 
 	log.Printf("[INFO] Start dump modification")
@@ -102,7 +102,7 @@ func run() error {
 	}
 
 	log.Printf("[DEBUG] retailer_master_ids: %v\n", globalStorage.Get("retailer_master_ids"))
-	//log.Printf("[DEBUG] user_ids: %s\n", storage.Get("user_ids"))
+	// log.Printf("[DEBUG] user_ids: %s\n", storage.Get("user_ids"))
 
 	//log.Printf("[DEBUG] Sync folders")
 	//err = syncDirs(conf.Source, conf.Destination)

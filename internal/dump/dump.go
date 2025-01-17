@@ -2,6 +2,7 @@ package dump
 
 import (
 	"fmt"
+
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
