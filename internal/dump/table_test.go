@@ -20,11 +20,11 @@ func TestTableMetaParsing(t *testing.T) {
 
 	column, ok = table.Columns["Name"]
 	assert.True(t, ok)
-	assert.Equal(t, table.Columns["Name"].Position, 1)
+	assert.Equal(t, column.Position, 1)
 
 	column, ok = table.Columns["comment"]
 	assert.True(t, ok)
-	assert.Equal(t, table.Columns["comment"].Position, 2)
+	assert.Equal(t, column.Position, 2)
 
 	assert.Equal(t, table.SortedColumns, []string{"id", "Name", "comment"})
 }

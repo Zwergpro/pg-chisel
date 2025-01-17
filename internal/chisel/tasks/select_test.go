@@ -157,8 +157,6 @@ func mapKeysToInts(data []string) []int {
 
 func mapKeysToStrings(data []string) []string {
 	keys := make([]string, 0, len(data))
-	for _, val := range data {
-		keys = append(keys, val)
-	}
+	keys = append(keys, data...)
 	return keys
 }
