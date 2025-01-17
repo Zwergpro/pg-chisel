@@ -1,0 +1,5 @@
+.PHONY: gocyclo
+
+
+gocyclo:
+	gocyclo .
