@@ -1,5 +1,10 @@
-# pg-chisel
-Tool for chiseling away unwanted parts from the PostgreSQL dump.
+<p align="center">
+  <img alt="pg-chisel logo" src="assets/logo.png" height="150" />
+  <h3 align="center">pg-chisel</h3>
+  <p align="center">Chiseling away unwanted parts from the PostgreSQL dump</p>
+</p>
+
+---
 
 <div>
 
