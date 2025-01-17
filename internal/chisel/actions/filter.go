@@ -56,7 +56,10 @@ func NewCELFilter(expr string, storage Storage) (Filter, error) {
 
 	// Step 4: Ensure Output is Boolean
 	if checkedAST.OutputType() != cel.BoolType {
-		return nil, fmt.Errorf("CEL filter must return boolean, but got: %v", checkedAST.OutputType())
+		return nil, fmt.Errorf(
+			"CEL filter must return boolean, but got: %v",
+			checkedAST.OutputType(),
+		)
 	}
 
 	// Step 5: Compile Program

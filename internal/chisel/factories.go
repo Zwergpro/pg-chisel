@@ -9,7 +9,11 @@ import (
 	"github.com/zwergpro/pg-chisel/internal/dump"
 )
 
-func CreateTasks(conf *config.Config, meta *dump.Dump, storage storage.Storage) ([]tasks.Task, error) {
+func CreateTasks(
+	conf *config.Config,
+	meta *dump.Dump,
+	storage storage.Storage,
+) ([]tasks.Task, error) {
 	taskSet := make([]tasks.Task, 0, len(conf.Tasks))
 
 	for idx, taskCfg := range conf.Tasks {
@@ -40,7 +44,11 @@ func CreateTasks(conf *config.Config, meta *dump.Dump, storage storage.Storage) 
 	return taskSet, nil
 }
 
-func createSelectTask(task *config.Task, meta *dump.Dump, storage storage.Storage) (tasks.Task, error) {
+func createSelectTask(
+	task *config.Task,
+	meta *dump.Dump,
+	storage storage.Storage,
+) (tasks.Task, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -65,7 +73,11 @@ func createSelectTask(task *config.Task, meta *dump.Dump, storage storage.Storag
 	return selectTask, nil
 }
 
-func createDeleteTask(task *config.Task, meta *dump.Dump, storage storage.Storage) (tasks.Task, error) {
+func createDeleteTask(
+	task *config.Task,
+	meta *dump.Dump,
+	storage storage.Storage,
+) (tasks.Task, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -84,7 +96,11 @@ func createDeleteTask(task *config.Task, meta *dump.Dump, storage storage.Storag
 	return selectTask, nil
 }
 
-func createModifyTask(task *config.Task, meta *dump.Dump, storage storage.Storage) (tasks.Task, error) {
+func createModifyTask(
+	task *config.Task,
+	meta *dump.Dump,
+	storage storage.Storage,
+) (tasks.Task, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)

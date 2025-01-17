@@ -60,8 +60,16 @@ func TestEntityMetaCommonFromLine(t *testing.T) {
 	}{
 		{"1; 1 63658230 INDEX public test_table_1eba186c user", INDEX, "test_table_1eba186c"},
 		{"1; 1 63658230 SEQUENCE public test_table_id_seq user", SEQUENCE, "test_table_id_seq"},
-		{"1; 1 63658230 SEQUENCE OWNED BY public test_table_id_seq user", SEQUENCE_OWNED_BY, "test_table_id_seq"},
-		{"1; 1 63658230 SEQUENCE SET public test_table_id_seq user", SEQUENCE_SET, "test_table_id_seq"},
+		{
+			"1; 1 63658230 SEQUENCE OWNED BY public test_table_id_seq user",
+			SEQUENCE_OWNED_BY,
+			"test_table_id_seq",
+		},
+		{
+			"1; 1 63658230 SEQUENCE SET public test_table_id_seq user",
+			SEQUENCE_SET,
+			"test_table_id_seq",
+		},
 		{"1; 1 63658230 TABLE public test_table user", TABLE, "test_table"},
 		{"1; 1 63658230 TABLE DATA public test_table user", TABLE_DATA, "test_table"},
 	}
@@ -86,7 +94,11 @@ func TestEntityMetaFunctionFromLine(t *testing.T) {
 		desc EntityDescType
 		name string
 	}{
-		{"1; 1 63658230 FUNCTION public test_func(jsonb, jsonb) user", FUNCTION, "test_func(jsonb, jsonb)"},
+		{
+			"1; 1 63658230 FUNCTION public test_func(jsonb, jsonb) user",
+			FUNCTION,
+			"test_func(jsonb, jsonb)",
+		},
 		{"1; 1 63658230 FUNCTION public test_func() user", FUNCTION, "test_func()"},
 	}
 

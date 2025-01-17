@@ -114,7 +114,10 @@ func compileCELModifierProgram(env *cel.Env, expression string) (cel.Program, er
 	}
 
 	if !checkedAST.OutputType().Equal(cel.MapType(cel.StringType, cel.DynType)).Value().(bool) {
-		return nil, fmt.Errorf("CEL fetch expression must return map[string]dyn, got: %v", checkedAST.OutputType())
+		return nil, fmt.Errorf(
+			"CEL fetch expression must return map[string]dyn, got: %v",
+			checkedAST.OutputType(),
+		)
 	}
 
 	prg, err := env.Program(checkedAST)
