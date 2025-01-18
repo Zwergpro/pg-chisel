@@ -15,13 +15,13 @@ import (
 
 // CELFetcher fetches data using CEL expressions and manages buffered results.
 type CELFetcher struct {
-	buffer  map[string][]string // Buffer for storing fetched results
-	storage Storage             // Storage for final data persistence
-	prg     cel.Program         // Compiled CEL program
+	buffer map[string][]string // Buffer for storing fetched results
+	store  storage.Storage     // Store for final data persistence
+	prg    cel.Program         // Compiled CEL program
 }
 
 // NewCELFetcher initializes and validates a CELFetcher instance.
-func NewCELFetcher(fetch map[string]string, storage Storage) (*CELFetcher, error) {
+func NewCELFetcher(fetch map[string]string, store storage.Storage) (*CELFetcher, error) {
 	expression, err := buildCELFetcherExpression(fetch)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build CEL expression: %w", err)
@@ -38,9 +38,9 @@ func NewCELFetcher(fetch map[string]string, storage Storage) (*CELFetcher, error
 	}
 
 	return &CELFetcher{
-		buffer:  make(map[string][]string),
-		storage: storage,
-		prg:     prg,
+		buffer: make(map[string][]string),
+		store:  store,
+		prg:    prg,
 	}, nil
 }
 
@@ -139,11 +139,11 @@ func (f *CELFetcher) Fetch(rec storage.RecordStore) error {
 	return nil
 }
 
-// Flush writes the accumulated data to the Storage.
+// Flush writes the accumulated data to the Store.
 func (f *CELFetcher) Flush() error {
 	for key, values := range f.buffer {
 		log.Printf("[DEBUG] Flushing key: %s", key)
-		f.storage.Set(key, values)
+		f.store.Set(key, values)
 	}
 	clear(f.buffer)
 	return nil
@@ -151,14 +151,14 @@ func (f *CELFetcher) Flush() error {
 
 type DummyFetcher struct {
 	Buffer  map[string][]string
-	Storage Storage
+	Store   storage.Storage
 	Columns []string
 }
 
-func NewDummyFetcher(storage Storage, columns []string) *DummyFetcher {
+func NewDummyFetcher(store storage.Storage, columns []string) *DummyFetcher {
 	return &DummyFetcher{
 		Buffer:  make(map[string][]string),
-		Storage: storage,
+		Store:   store,
 		Columns: columns,
 	}
 }
@@ -180,7 +180,7 @@ func (f *DummyFetcher) Fetch(rec storage.RecordStore) error {
 func (f *DummyFetcher) Flush() error {
 	for key, values := range f.Buffer {
 		log.Printf("[DEBUG] Flushing key: %s", key)
-		f.Storage.Set(key, values)
+		f.Store.Set(key, values)
 	}
 	clear(f.Buffer)
 	return nil

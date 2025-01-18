@@ -64,7 +64,7 @@ func TestFetch_Success(t *testing.T) {
 func TestFetch_EmptyRecord(t *testing.T) {
 	mockStorage := mocks.NewStorage(t)
 	fetchRules := map[string]string{
-		"shouldBeMap": `string(table.id)`,
+		"field": `string(table.id)`,
 	}
 
 	fetcher, err := NewCELFetcher(fetchRules, mockStorage)
@@ -100,14 +100,14 @@ func TestFetch_MapWithNonStringKeyOrValue(t *testing.T) {
 func TestFlush_Success(t *testing.T) {
 	mockStorage := mocks.NewStorage(t)
 	fetcher := &CELFetcher{
-		buffer:  map[string][]string{},
-		storage: mockStorage,
+		buffer: map[string][]string{},
+		store:  mockStorage,
 	}
 
 	fetcher.buffer["foo"] = []string{"fooVal1", "fooVal2"}
 	fetcher.buffer["bar"] = []string{"barVal1"}
 
-	// We expect calls to storage.Set
+	// We expect calls to store.Set
 	mockStorage.On("Set", "foo", []string{"fooVal1", "fooVal2"}).Return()
 	mockStorage.On("Set", "bar", []string{"barVal1"}).Return()
 

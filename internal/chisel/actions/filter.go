@@ -38,9 +38,9 @@ func (f *CELFilter) IsMatched(rec storage.RecordStore) (bool, error) {
 }
 
 // NewCELFilter creates and initializes a new CELFilter.
-func NewCELFilter(expr string, storage Storage) (*CELFilter, error) {
+func NewCELFilter(expr string, store storage.Storage) (*CELFilter, error) {
 	// Step 1: Create CEL Environment
-	env, err := createCELEnvironment(storage)
+	env, err := createCELEnvironment(store)
 	if err != nil {
 		return nil, err
 	}
@@ -75,10 +75,10 @@ func NewCELFilter(expr string, storage Storage) (*CELFilter, error) {
 }
 
 // createCELEnvironment initializes the CEL environment with variables and custom functions.
-func createCELEnvironment(storage Storage) (*cel.Env, error) {
+func createCELEnvironment(store storage.Storage) (*cel.Env, error) {
 	env, err := cel_extensions.NewEnv(
-		cel_extensions.GetArrayFunc(storage),
-		cel_extensions.GetSetFunc(storage),
+		cel_extensions.GetArrayFunc(store),
+		cel_extensions.GetSetFunc(store),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create CEL environment: %w", err)
