@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/commands"
 	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump"
 )
 
 type ConsistentStrategy struct {
-	cmds []commands.Cmd
+	cmds []Cmd
 }
 
 func (s *ConsistentStrategy) Execute() error {

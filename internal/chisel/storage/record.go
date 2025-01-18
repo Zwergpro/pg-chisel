@@ -25,13 +25,19 @@ func NewRecord(row []byte, cols []string) *Record {
 		Cols: cols,
 	}
 	rec.parseVals()
+
+	// TODO: check
+	//if len(rec.Vals) != len(rec.Cols) {
+	//	return fmt.Errorf("Something wennt wrong")
+	//}
+
 	return &rec
 }
 
 // parseVals splits the raw line into columns by the '\t' character.
 func (r *Record) parseVals() {
 	columns := bytes.Split(bytes.TrimSuffix(r.Row, []byte{'\n'}), []byte{'\t'})
-	if len(columns) > 1 {
+	if len(columns) > 0 {
 		r.Vals = columns
 	}
 }

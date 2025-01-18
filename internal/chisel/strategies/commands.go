@@ -10,12 +10,16 @@ import (
 	"github.com/zwergpro/pg-chisel/internal/dump"
 )
 
+type Cmd interface {
+	Execute() error
+}
+
 func buildCommands(
 	conf *config.Config,
 	meta *dump.Dump,
 	storage storage.Storage,
-) ([]commands.Cmd, error) {
-	cmds := make([]commands.Cmd, 0, len(conf.Tasks))
+) ([]Cmd, error) {
+	cmds := make([]Cmd, 0, len(conf.Tasks))
 
 	for idx, cmdCfg := range conf.Tasks {
 		switch cmdCfg.Cmd {
@@ -55,7 +59,7 @@ func createSelectCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (commands.Cmd, error) {
+) (Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -84,7 +88,7 @@ func createDeleteCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (commands.Cmd, error) {
+) (Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -107,7 +111,7 @@ func createUpdateCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (commands.Cmd, error) {
+) (Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -132,7 +136,7 @@ func createUpdateCmd(
 	return updateCmd, nil
 }
 
-func createSyncCmd(conf *config.Config, task *config.Task) (commands.Cmd, error) {
+func createSyncCmd(conf *config.Config, task *config.Task) (Cmd, error) {
 	syncType, err := commands.ParseSyncType(task.Type)
 	if err != nil {
 		return nil, err

@@ -27,7 +27,7 @@ func NewSelectCmd(
 	handler dumpio.DumpHandler,
 	filter RecordFilter,
 	fetcher RecordFetcher,
-) Cmd {
+) *SelectCmd {
 	return &SelectCmd{
 		entity:  entity,
 		handler: handler,
