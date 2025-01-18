@@ -1,4 +1,4 @@
-package tasks
+package commands
 
 import (
 	"slices"
@@ -13,14 +13,7 @@ import (
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
-type Storage interface {
-	Get(key string) []string
-	GetSet(key string) map[string]struct{}
-	Set(key string, values []string)
-	Delete(key string)
-}
-
-func TestSelectTask(t *testing.T) {
+func TestSelectCmd(t *testing.T) {
 	content := strings.Join(
 		[]string{
 			"1\tName1\t1@test.com\t11",
@@ -53,8 +46,8 @@ func TestSelectTask(t *testing.T) {
 
 	expectedIds := []int{2, 4}
 	filter := actions.NewDummyFilter(
-		func(tuple actions.Recorder) bool {
-			table := tuple.GetColumnMapping()
+		func(rec storage.RecordStore) bool {
+			table := rec.GetColumnMapping()
 			val, _ := strconv.Atoi(string(table["id"]))
 			return slices.Contains(expectedIds, val)
 		},
@@ -64,7 +57,7 @@ func TestSelectTask(t *testing.T) {
 	assert.NoError(t, err, "unexpected NewMapStringStorage error")
 	fetcher := actions.NewDummyFetcher(testStorage, []string{"id", "email"})
 
-	selectTask := NewSelectTask(&entity, dumpHandler, filter, fetcher)
+	selectTask := NewSelectCmd(&entity, dumpHandler, filter, fetcher)
 
 	err = selectTask.Execute()
 	assert.NoError(t, err, "unexpected selectTask error")
@@ -73,7 +66,7 @@ func TestSelectTask(t *testing.T) {
 	assertSetContainsEmails(t, testStorage, "email", []string{"2@test.com", "4@test.com"})
 }
 
-func TestCELSelectTask(t *testing.T) {
+func TestCELSelectCmd(t *testing.T) {
 	content := strings.Join(
 		[]string{
 			"1\tName1\t1@test.com\t11",
@@ -119,7 +112,7 @@ func TestCELSelectTask(t *testing.T) {
 	)
 	assert.NoError(t, err, "unexpected NewCELFetcher error")
 
-	selectTask := NewSelectTask(&entity, dumpHandler, filter, fetcher)
+	selectTask := NewSelectCmd(&entity, dumpHandler, filter, fetcher)
 
 	err = selectTask.Execute()
 	assert.NoError(t, err, "unexpected selectTask error")
@@ -128,7 +121,7 @@ func TestCELSelectTask(t *testing.T) {
 	assertSetContainsEmails(t, testStorage, "email", []string{"2@test.com", "4@test.com"})
 }
 
-func assertSetContainsIDs(t *testing.T, storage Storage, key string, expected []int) {
+func assertSetContainsIDs(t *testing.T, storage storage.Storage, key string, expected []int) {
 	idSet := storage.Get(key)
 	assert.NotNil(t, idSet)
 
@@ -138,7 +131,7 @@ func assertSetContainsIDs(t *testing.T, storage Storage, key string, expected []
 	assert.ElementsMatch(t, ids, expected)
 }
 
-func assertSetContainsEmails(t *testing.T, storage Storage, key string, expected []string) {
+func assertSetContainsEmails(t *testing.T, storage storage.Storage, key string, expected []string) {
 	emailSet := storage.Get(key)
 	emails := mapKeysToStrings(emailSet)
 	assert.NotNil(t, emails)

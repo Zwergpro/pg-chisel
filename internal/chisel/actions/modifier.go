@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
@@ -14,7 +16,7 @@ type CELModifier struct {
 	prg cel.Program // Compiled CEL program
 }
 
-func (m *CELModifier) Modify(rec Recorder) error {
+func (m *CELModifier) Modify(rec storage.RecordStore) error {
 	// Prepare the input for CEL evaluation
 	input := map[string]any{
 		"table": rec.GetColumnMapping(),

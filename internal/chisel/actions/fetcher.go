@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
@@ -92,7 +94,7 @@ func compileCELFetcherProgram(env *cel.Env, expression string) (cel.Program, err
 }
 
 // Fetch evaluates the CEL program and stores the results in the buffer.
-func (f *CELFetcher) Fetch(rec Recorder) error {
+func (f *CELFetcher) Fetch(rec storage.RecordStore) error {
 	// Prepare the input for CEL evaluation
 	input := map[string]any{
 		"table": rec.GetColumnMapping(),
@@ -161,7 +163,7 @@ func NewDummyFetcher(storage Storage, columns []string) *DummyFetcher {
 	}
 }
 
-func (f *DummyFetcher) Fetch(rec Recorder) error {
+func (f *DummyFetcher) Fetch(rec storage.RecordStore) error {
 	columns := rec.GetColumnMapping()
 
 	for _, col := range f.Columns {

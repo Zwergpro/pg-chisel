@@ -3,6 +3,8 @@ package actions
 import (
 	"fmt"
 
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/google/cel-go/cel"
 	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
 )
@@ -11,7 +13,7 @@ type CELFilter struct {
 	prg cel.Program
 }
 
-func (f *CELFilter) IsMatched(rec Recorder) (bool, error) {
+func (f *CELFilter) IsMatched(rec storage.RecordStore) (bool, error) {
 	// Get the column mapping from the rec
 	table := rec.GetColumnMapping()
 
@@ -36,7 +38,7 @@ func (f *CELFilter) IsMatched(rec Recorder) (bool, error) {
 }
 
 // NewCELFilter creates and initializes a new CELFilter.
-func NewCELFilter(expr string, storage Storage) (Filter, error) {
+func NewCELFilter(expr string, storage Storage) (*CELFilter, error) {
 	// Step 1: Create CEL Environment
 	env, err := createCELEnvironment(storage)
 	if err != nil {
@@ -104,13 +106,13 @@ func validateCELExpression(env *cel.Env, ast *cel.Ast) (*cel.Ast, error) {
 }
 
 type DummyFilter struct {
-	filterFunc func(rec Recorder) bool
+	filterFunc func(rec storage.RecordStore) bool
 }
 
-func NewDummyFilter(filterFunc func(rec Recorder) bool) *DummyFilter {
+func NewDummyFilter(filterFunc func(rec storage.RecordStore) bool) *DummyFilter {
 	return &DummyFilter{filterFunc: filterFunc}
 }
 
-func (f *DummyFilter) IsMatched(rec Recorder) (bool, error) {
+func (f *DummyFilter) IsMatched(rec storage.RecordStore) (bool, error) {
 	return f.filterFunc(rec), nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,9 +10,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-pkgz/lgr"
 	"github.com/jessevdk/go-flags"
-	"github.com/zwergpro/pg-chisel/internal/chisel"
 	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
-	"github.com/zwergpro/pg-chisel/internal/chisel/tasks"
+	"github.com/zwergpro/pg-chisel/internal/chisel/strategies"
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump"
 )
@@ -90,14 +88,12 @@ func run() error {
 		return err
 	}
 
-	createdTasks, err := chisel.CreateTasks(conf, dbDump, globalStorage)
+	strategy, err := strategies.BuildConsistentStrategy(conf, dbDump, globalStorage)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[INFO] Tasks created: %d", len(createdTasks))
-
-	if err = execute(createdTasks); err != nil {
+	if err = strategy.Execute(); err != nil {
 		return err
 	}
 
@@ -110,15 +106,6 @@ func run() error {
 	//	return err
 	//}
 
-	return nil
-}
-
-func execute(tasks []tasks.Task) error {
-	for _, t := range tasks {
-		if err := t.Execute(); err != nil {
-			return fmt.Errorf("action execution error: %w", err)
-		}
-	}
 	return nil
 }
 

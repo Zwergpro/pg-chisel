@@ -1,4 +1,4 @@
-package tasks
+package commands
 
 import (
 	"bufio"
@@ -7,25 +7,26 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/zwergpro/pg-chisel/internal/dump"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
-type ModifyTask struct {
+type UpdateCmd struct {
 	entity   *dump.Entity
 	handler  dumpio.DumpHandler
-	filter   actions.Filter
-	modifier actions.Modifier
+	filter   RecordFilter
+	modifier RecordModifier
 }
 
-func NewModifyTask(
+func NewUpdateCmd(
 	entity *dump.Entity,
 	handler dumpio.DumpHandler,
-	filter actions.Filter,
-	modifier actions.Modifier,
-) *ModifyTask {
-	return &ModifyTask{
+	filter RecordFilter,
+	modifier RecordModifier,
+) *UpdateCmd {
+	return &UpdateCmd{
 		entity:   entity,
 		handler:  handler,
 		filter:   filter,
@@ -33,8 +34,8 @@ func NewModifyTask(
 	}
 }
 
-func (t *ModifyTask) Execute() error {
-	log.Printf("[DEBUG] Starting ModifyTask")
+func (t *UpdateCmd) Execute() error {
+	log.Printf("[DEBUG] Starting UpdateCmd")
 	dumpReader := t.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
 		return fmt.Errorf("failed to open reader: %w", err)
@@ -63,7 +64,7 @@ func (t *ModifyTask) Execute() error {
 		}
 
 		lineCounter++
-		rec := NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
 
 		matched, err := t.filter.IsMatched(rec)
 		if err != nil {

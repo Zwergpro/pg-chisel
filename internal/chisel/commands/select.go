@@ -1,4 +1,4 @@
-package tasks
+package commands
 
 import (
 	"bufio"
@@ -7,27 +7,28 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/zwergpro/pg-chisel/internal/dump"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
-// SelectTask reads from a source, applies a filter, and for each matching line
-// it calls a Fetcher to do something (e.g., store, print).
-type SelectTask struct {
+// SelectCmd reads from a source, applies a filter, and for each matching line
+// it calls a RecordFetcher to do something (e.g., store, print).
+type SelectCmd struct {
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
-	filter  actions.Filter
-	fetcher actions.Fetcher
+	filter  RecordFilter
+	fetcher RecordFetcher
 }
 
-func NewSelectTask(
+func NewSelectCmd(
 	entity *dump.Entity,
 	handler dumpio.DumpHandler,
-	filter actions.Filter,
-	fetcher actions.Fetcher,
-) Task {
-	return &SelectTask{
+	filter RecordFilter,
+	fetcher RecordFetcher,
+) Cmd {
+	return &SelectCmd{
 		entity:  entity,
 		handler: handler,
 		filter:  filter,
@@ -35,8 +36,8 @@ func NewSelectTask(
 	}
 }
 
-func (t *SelectTask) Execute() error {
-	log.Printf("[DEBUG] Starting SelectTask")
+func (t *SelectCmd) Execute() error {
+	log.Printf("[DEBUG] Starting SelectCmd")
 
 	dumpReader := t.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
@@ -51,7 +52,7 @@ func (t *SelectTask) Execute() error {
 	fetchedCounter := 0
 
 	for {
-		// TODO: move readNextLine to GetReader with Recorder returning
+		// TODO: move readNextLine to GetReader with RecordStore returning
 		rowLine, err := readNextLine(reader)
 		if err != nil {
 			if err == io.EOF {
@@ -61,7 +62,7 @@ func (t *SelectTask) Execute() error {
 		}
 
 		lineCounter++
-		rec := NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
 
 		matched, err := t.filter.IsMatched(rec)
 		if err != nil {

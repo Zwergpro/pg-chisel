@@ -1,55 +1,55 @@
-package chisel
+package strategies
 
 import (
 	"fmt"
 
 	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/chisel/commands"
 	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
-	"github.com/zwergpro/pg-chisel/internal/chisel/tasks"
 	"github.com/zwergpro/pg-chisel/internal/config"
 	"github.com/zwergpro/pg-chisel/internal/dump"
 )
 
-func CreateTasks(
+func buildCommands(
 	conf *config.Config,
 	meta *dump.Dump,
 	storage storage.Storage,
-) ([]tasks.Task, error) {
-	taskSet := make([]tasks.Task, 0, len(conf.Tasks))
+) ([]commands.Cmd, error) {
+	cmds := make([]commands.Cmd, 0, len(conf.Tasks))
 
-	for idx, taskCfg := range conf.Tasks {
-		switch taskCfg.Cmd {
-		case "select":
-			task, err := createSelectTask(&taskCfg, meta, storage)
+	for idx, cmdCfg := range conf.Tasks {
+		switch cmdCfg.Cmd {
+		case commands.SELECT_CMD:
+			cmd, err := createSelectCmd(&cmdCfg, meta, storage)
 			if err != nil {
-				return nil, fmt.Errorf("can't create select task[%d]: %w", idx, err)
+				return nil, fmt.Errorf("can't create select cmd[%d]: %w", idx, err)
 			}
-			taskSet = append(taskSet, task)
-		case "delete":
-			task, err := createDeleteTask(&taskCfg, meta, storage)
+			cmds = append(cmds, cmd)
+		case commands.DELETE_CMD:
+			cmd, err := createDeleteCmd(&cmdCfg, meta, storage)
 			if err != nil {
-				return nil, fmt.Errorf("can't create delete task[%d]: %w", idx, err)
+				return nil, fmt.Errorf("can't create delete cmd[%d]: %w", idx, err)
 			}
-			taskSet = append(taskSet, task)
-		case "update":
-			task, err := createModifyTask(&taskCfg, meta, storage)
+			cmds = append(cmds, cmd)
+		case commands.UPDATE_CMD:
+			cmd, err := createUpdateCmd(&cmdCfg, meta, storage)
 			if err != nil {
-				return nil, fmt.Errorf("can't create modify task[%d]: %w", idx, err)
+				return nil, fmt.Errorf("can't create update cmd[%d]: %w", idx, err)
 			}
-			taskSet = append(taskSet, task)
+			cmds = append(cmds, cmd)
 		default:
-			return nil, fmt.Errorf("unknown command: %s", taskCfg.Cmd)
+			return nil, fmt.Errorf("unknown command: %s", cmdCfg.Cmd)
 		}
 	}
 
-	return taskSet, nil
+	return cmds, nil
 }
 
-func createSelectTask(
+func createSelectCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (tasks.Task, error) {
+) (commands.Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -65,20 +65,20 @@ func createSelectTask(
 		return nil, err
 	}
 
-	selectTask := tasks.NewSelectTask(
+	selectCmd := commands.NewSelectCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
 		fetcher,
 	)
-	return selectTask, nil
+	return selectCmd, nil
 }
 
-func createDeleteTask(
+func createDeleteCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (tasks.Task, error) {
+) (commands.Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -89,19 +89,19 @@ func createDeleteTask(
 		return nil, err
 	}
 
-	selectTask := tasks.NewDeleteTask(
+	deleteCmd := commands.NewDeleteCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
 	)
-	return selectTask, nil
+	return deleteCmd, nil
 }
 
-func createModifyTask(
+func createUpdateCmd(
 	task *config.Task,
 	meta *dump.Dump,
 	storage storage.Storage,
-) (tasks.Task, error) {
+) (commands.Cmd, error) {
 	entity, err := meta.GetTable(task.Table)
 	if err != nil {
 		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
@@ -117,11 +117,11 @@ func createModifyTask(
 		return nil, err
 	}
 
-	selectTask := tasks.NewModifyTask(
+	updateCmd := commands.NewUpdateCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
 		modifier,
 	)
-	return selectTask, nil
+	return updateCmd, nil
 }

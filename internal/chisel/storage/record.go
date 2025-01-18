@@ -1,10 +1,16 @@
-package tasks
+package storage
 
 import (
 	"bytes"
 	"fmt"
 	"slices"
 )
+
+type RecordStore interface {
+	GetColumnMapping() map[string][]byte
+	SetVal(col string, val []byte) error
+	Refresh()
+}
 
 // Record represents one line (Row) of data.
 type Record struct {
@@ -18,12 +24,12 @@ func NewRecord(row []byte, cols []string) *Record {
 		Row:  row,
 		Cols: cols,
 	}
-	rec.ParseVals()
+	rec.parseVals()
 	return &rec
 }
 
-// ParseVals splits the raw line into columns by the '\t' character.
-func (r *Record) ParseVals() {
+// parseVals splits the raw line into columns by the '\t' character.
+func (r *Record) parseVals() {
 	columns := bytes.Split(bytes.TrimSuffix(r.Row, []byte{'\n'}), []byte{'\t'})
 	if len(columns) > 1 {
 		r.Vals = columns
@@ -32,7 +38,7 @@ func (r *Record) ParseVals() {
 
 func (r *Record) GetColumnMapping() map[string][]byte {
 	if len(r.Vals) == 0 {
-		r.ParseVals()
+		r.parseVals()
 	}
 
 	columnMapping := make(map[string][]byte)

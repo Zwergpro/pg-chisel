@@ -1,4 +1,4 @@
-package tasks
+package commands
 
 import (
 	"bufio"
@@ -7,31 +7,32 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+
 	"github.com/zwergpro/pg-chisel/internal/dump"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
-type DeleteTask struct {
+type DeleteCmd struct {
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
-	filter  actions.Filter
+	filter  RecordFilter
 }
 
-func NewDeleteTask(
+func NewDeleteCmd(
 	entity *dump.Entity,
 	handler dumpio.DumpHandler,
-	filter actions.Filter,
-) *DeleteTask {
-	return &DeleteTask{
+	filter RecordFilter,
+) *DeleteCmd {
+	return &DeleteCmd{
 		entity:  entity,
 		handler: handler,
 		filter:  filter,
 	}
 }
 
-func (t *DeleteTask) Execute() error {
-	log.Printf("[DEBUG] Starting DeleteTask")
+func (t *DeleteCmd) Execute() error {
+	log.Printf("[DEBUG] Starting DeleteCmd")
 
 	dumpReader := t.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
@@ -61,7 +62,7 @@ func (t *DeleteTask) Execute() error {
 		}
 
 		lineCounter++
-		rec := NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
 
 		matched, err := t.filter.IsMatched(rec)
 		if err != nil {

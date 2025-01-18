@@ -1,4 +1,4 @@
-package tasks
+package commands
 
 import (
 	"slices"
@@ -8,11 +8,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
+	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
 	"github.com/zwergpro/pg-chisel/internal/dump"
 	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
 )
 
-func TestModifySetNullTask(t *testing.T) {
+func TestModifySetNullCmd(t *testing.T) {
 	content := strings.Join(
 		[]string{
 			"1\tName1\t1@test.com\t11",
@@ -46,8 +47,8 @@ func TestModifySetNullTask(t *testing.T) {
 
 	filteredIds := []int{2, 4}
 	filter := actions.NewDummyFilter(
-		func(tuple actions.Recorder) bool {
-			table := tuple.GetColumnMapping()
+		func(rec storage.RecordStore) bool {
+			table := rec.GetColumnMapping()
 			val, _ := strconv.Atoi(string(table["id"]))
 			return slices.Contains(filteredIds, val)
 		},
@@ -55,13 +56,13 @@ func TestModifySetNullTask(t *testing.T) {
 
 	modifier, err := actions.NewCELModifier(
 		map[string]string{
-			"name": `"\\N"`,
-			"age":  `"\\N"`,
+			"name": "NULL",
+			"age":  "NULL",
 		},
 	)
 	assert.NoError(t, err, "unexpected NewCELModifier error")
 
-	modifierTask := NewModifyTask(&entity, dumpHandler, filter, modifier)
+	modifierTask := NewUpdateCmd(&entity, dumpHandler, filter, modifier)
 
 	err = modifierTask.Execute()
 	assert.NoError(t, err, "unexpected modifierTask error")
@@ -83,7 +84,7 @@ func TestModifySetNullTask(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
-func TestModifyTask(t *testing.T) {
+func TestModifyCmd(t *testing.T) {
 	content := strings.Join(
 		[]string{
 			"1\tName1\t1@test.com\t11",
@@ -117,8 +118,8 @@ func TestModifyTask(t *testing.T) {
 
 	filteredIds := []int{2, 4}
 	filter := actions.NewDummyFilter(
-		func(tuple actions.Recorder) bool {
-			table := tuple.GetColumnMapping()
+		func(rec storage.RecordStore) bool {
+			table := rec.GetColumnMapping()
 			val, _ := strconv.Atoi(string(table["id"]))
 			return slices.Contains(filteredIds, val)
 		},
@@ -132,7 +133,7 @@ func TestModifyTask(t *testing.T) {
 	)
 	assert.NoError(t, err, "unexpected NewCELModifier error")
 
-	modifierTask := NewModifyTask(&entity, dumpHandler, filter, modifier)
+	modifierTask := NewUpdateCmd(&entity, dumpHandler, filter, modifier)
 
 	err = modifierTask.Execute()
 	assert.NoError(t, err, "unexpected modifierTask error")
