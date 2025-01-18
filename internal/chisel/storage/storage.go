@@ -73,6 +73,8 @@ func (s *MapStringStorage) Set(key string, values []string) {
 	defer s.mu.Unlock()
 
 	s.data[key] = values
+
+	delete(s.sets, key)
 }
 
 func (s *MapStringStorage) Delete(key string) {
