@@ -37,6 +37,12 @@ func buildCommands(
 				return nil, fmt.Errorf("can't create update cmd[%d]: %w", idx, err)
 			}
 			cmds = append(cmds, cmd)
+		case commands.SYNC_CMD:
+			cmd, err := createSyncCmd(conf, &cmdCfg)
+			if err != nil {
+				return nil, fmt.Errorf("can't create update cmd[%d]: %w", idx, err)
+			}
+			cmds = append(cmds, cmd)
 		default:
 			return nil, fmt.Errorf("unknown command: %s", cmdCfg.Cmd)
 		}
@@ -122,6 +128,20 @@ func createUpdateCmd(
 		entity.DumpHandler,
 		filter,
 		modifier,
+	)
+	return updateCmd, nil
+}
+
+func createSyncCmd(conf *config.Config, task *config.Task) (commands.Cmd, error) {
+	syncType, err := commands.ParseSyncType(task.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	updateCmd := commands.NewSyncDirCmd(
+		syncType,
+		conf.Source,
+		conf.Destination,
 	)
 	return updateCmd, nil
 }

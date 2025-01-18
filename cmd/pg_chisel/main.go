@@ -97,39 +97,5 @@ func run() error {
 		return err
 	}
 
-	log.Printf("[DEBUG] retailer_master_ids: %v\n", globalStorage.Get("retailer_master_ids"))
-	// log.Printf("[DEBUG] user_ids: %s\n", storage.Get("user_ids"))
-
-	//log.Printf("[DEBUG] Sync folders")
-	//err = syncDirs(conf.Source, conf.Destination)
-	//if err != nil {
-	//	return err
-	//}
-
 	return nil
 }
-
-//func syncDirs(src, dst string) error {
-//	visit := func(path string, f os.FileInfo, err error) error {
-//		if f.IsDir() {
-//			return nil
-//		}
-//		log.Printf("[DEBUG] File: %s", f.Name())
-//		destPath := filepath.Join(dst, f.Name())
-//		_, err = os.Stat(destPath)
-//		if err != nil {
-//			if errors.Is(err, os.ErrNotExist) {
-//				err = os.Link(path, destPath)
-//				return err
-//			}
-//			return err
-//		}
-//		return nil
-//	}
-//
-//	err := filepath.Walk(src, visit)
-//	if err != nil {
-//		return fmt.Errorf("walk error: %w", err)
-//	}
-//	return nil
-//}

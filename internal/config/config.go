@@ -17,6 +17,7 @@ type Task struct {
 	Where string            `yaml:"where"`
 	Set   map[string]string `yaml:"set"`
 	Fetch map[string]string `yaml:"fetch"`
+	Type  string            `yaml:"type"`
 }
 
 type Config struct {
