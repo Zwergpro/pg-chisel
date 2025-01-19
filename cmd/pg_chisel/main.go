@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -17,9 +18,10 @@ import (
 )
 
 var opts struct {
-	Verbose bool   `short:"v" long:"verbose" description:"Show verbose information"`
-	Dbg     bool   `long:"dbg" description:"Debug mode"`
-	Config  string `short:"c" long:"config" description:"Config file" default:"chisel.yml"`
+	Verbose     bool   `short:"v" long:"verbose" description:"Show verbose information"`
+	Dbg         bool   `long:"dbg" description:"Debug mode"`
+	Config      string `short:"c" long:"config" description:"Config file" default:"chisel.yml"`
+	CheckConfig bool   `long:"check-config" description:"Check config file"`
 }
 
 func main() {
@@ -48,11 +50,15 @@ func run() error {
 	if err != nil {
 		return err
 	}
-
 	conf, err := config.New(confPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("config parse error: %w", err)
 	}
+	if opts.CheckConfig {
+		log.Printf("[INFO] Config file correct!")
+		return nil
+	}
+
 	log.Printf("[INFO] Source dir: %s", conf.Source)
 	log.Printf("[INFO] Destination dir: %s", conf.Destination)
 

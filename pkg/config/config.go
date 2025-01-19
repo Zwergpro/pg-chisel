@@ -43,19 +43,19 @@ func New(fname string) (*Config, error) {
 	log.Printf("[INFO] Read config file: %s", fname)
 	data, err := os.ReadFile(fname) // nolint
 	if err != nil {
-		return nil, fmt.Errorf("config file %s doen't exist: %s", fname, err)
+		return nil, fmt.Errorf("file %s doen't exist: %s", fname, err)
 	}
 
 	if err := unmarshalConfigFile(fname, data, &c); err != nil {
-		return nil, fmt.Errorf("can't create config: %s", err)
+		return nil, fmt.Errorf("unmarshaling error: %s", err)
 	}
 
 	if err := c.convertPaths(); err != nil {
-		return nil, fmt.Errorf("convertPaths error: %w", err)
+		return nil, fmt.Errorf("paths converting error: %w", err)
 	}
 
 	if err := c.validate(); err != nil {
-		return nil, fmt.Errorf("config validation error: %s", err)
+		return nil, fmt.Errorf("validation error: %s", err)
 	}
 
 	return &c, nil
@@ -67,10 +67,6 @@ func unmarshalConfigFile(fname string, data []byte, res *Config) error {
 	if err := yamlDecoder.Decode(res); err != nil {
 		return fmt.Errorf("can't unmarshal yaml config %s: %w", fname, err)
 	}
-	return nil
-}
-
-func (c *Config) validate() error {
 	return nil
 }
 
@@ -87,4 +83,8 @@ func (c *Config) convertPaths() error {
 	}
 	c.Destination = destinationPath
 	return nil
+}
+
+func (c *Config) validate() error {
+	return ValidateConfig(c)
 }
