@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
+	"github.com/zwergpro/pg-chisel/internal/contrib/fs"
 	"gopkg.in/yaml.v3"
 )
 
@@ -76,40 +75,16 @@ func (c *Config) validate() error {
 }
 
 func (c *Config) convertPaths() error {
-	sourcePath, err := makeAbs(c.Source)
+	sourcePath, err := fs.GetAbsolutePath(c.Source)
 	if err != nil {
 		return fmt.Errorf("source path converting error: %w", err)
 	}
 	c.Source = sourcePath
 
-	destinationPath, err := makeAbs(c.Destination)
+	destinationPath, err := fs.GetAbsolutePath(c.Destination)
 	if err != nil {
 		return fmt.Errorf("destination path converting error: %w", err)
 	}
 	c.Destination = destinationPath
 	return nil
-}
-
-func makeAbs(path string) (string, error) {
-	if filepath.IsAbs(path) {
-		return path, nil
-	}
-
-	if strings.HasPrefix(path, "~") {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", fmt.Errorf("can't get user's home dir: %w", err)
-		}
-
-		path = strings.TrimPrefix(path, "~")
-		path = strings.TrimPrefix(path, "/")
-		return filepath.Join(homeDir, path), nil
-	}
-
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", fmt.Errorf("can't get abs path: %w", err)
-	}
-
-	return absPath, nil
 }
