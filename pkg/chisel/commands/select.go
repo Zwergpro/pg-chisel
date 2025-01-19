@@ -7,32 +7,37 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
 
-	"github.com/zwergpro/pg-chisel/internal/dump"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
+	"github.com/zwergpro/pg-chisel/pkg/dump/dumpio"
 )
 
-type DeleteCmd struct {
+// SelectCmd reads from a source, applies a filter, and for each matching line
+// it calls a RecordFetcher to do something (e.g., store, print).
+type SelectCmd struct {
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
 	filter  RecordFilter
+	fetcher RecordFetcher
 }
 
-func NewDeleteCmd(
+func NewSelectCmd(
 	entity *dump.Entity,
 	handler dumpio.DumpHandler,
 	filter RecordFilter,
-) *DeleteCmd {
-	return &DeleteCmd{
+	fetcher RecordFetcher,
+) *SelectCmd {
+	return &SelectCmd{
 		entity:  entity,
 		handler: handler,
 		filter:  filter,
+		fetcher: fetcher,
 	}
 }
 
-func (t *DeleteCmd) Execute() error {
-	log.Printf("[DEBUG] Starting DeleteCmd")
+func (t *SelectCmd) Execute() error {
+	log.Printf("[DEBUG] Starting SelectCmd")
 
 	dumpReader := t.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
@@ -40,19 +45,14 @@ func (t *DeleteCmd) Execute() error {
 	}
 	defer dumpReader.Close()
 
-	dumpWriter := t.handler.GetWriter()
-	if err := dumpWriter.Open(); err != nil {
-		return fmt.Errorf("failed to open writer: %w", err)
-	}
-	defer dumpWriter.Close()
-
 	reader := bufio.NewReader(dumpReader)
 
 	start := time.Now()
 	lineCounter := 0
-	deletedCounter := 0
+	fetchedCounter := 0
 
 	for {
+		// TODO: move readNextLine to GetReader with RecordStore returning
 		rowLine, err := readNextLine(reader)
 		if err != nil {
 			if err == io.EOF {
@@ -69,28 +69,24 @@ func (t *DeleteCmd) Execute() error {
 			return fmt.Errorf("filter error: %w", err)
 		}
 
-		// Write only lines that do NOT match
 		if matched {
-			deletedCounter++
-			continue
+			fetchedCounter++
+			if err := t.fetcher.Fetch(rec); err != nil {
+				return fmt.Errorf("fetcher error: %w", err)
+			}
 		}
-
-		if _, writeErr := dumpWriter.Write(rec.Row); writeErr != nil {
-			return fmt.Errorf("write error: %w", writeErr)
-		}
-	}
-
-	if _, writeErr := dumpWriter.Write([]byte("\\.\n\n")); writeErr != nil {
-		return fmt.Errorf("end write error: %w", writeErr)
 	}
 
 	// Stats
 	duration := time.Since(start)
 	efficiency := float64(lineCounter) / duration.Seconds()
 	log.Printf(
-		"[DEBUG] STATS read=%d deleted=%d time=%.2fs efficiency=%.2f items/sec",
-		lineCounter, deletedCounter, duration.Seconds(), efficiency,
+		"[DEBUG] STATS read=%d fetched=%d time=%.2fs efficiency=%.2f items/sec",
+		lineCounter, fetchedCounter, duration.Seconds(), efficiency,
 	)
 
+	if err := t.fetcher.Flush(); err != nil {
+		return fmt.Errorf("fetcher flush error: %w", err)
+	}
 	return nil
 }

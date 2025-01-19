@@ -3,8 +3,8 @@ package actions
 import (
 	"testing"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage/mocks"
-	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage/mocks"
+	"github.com/zwergpro/pg-chisel/pkg/contrib/cel_extensions"
 
 	"github.com/stretchr/testify/assert"
 )

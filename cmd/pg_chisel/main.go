@@ -9,11 +9,11 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-pkgz/lgr"
 	"github.com/jessevdk/go-flags"
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
-	"github.com/zwergpro/pg-chisel/internal/chisel/strategies"
-	"github.com/zwergpro/pg-chisel/internal/config"
-	"github.com/zwergpro/pg-chisel/internal/contrib/fs"
-	"github.com/zwergpro/pg-chisel/internal/dump"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/strategies"
+	"github.com/zwergpro/pg-chisel/pkg/config"
+	"github.com/zwergpro/pg-chisel/pkg/contrib/fs"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
 )
 
 var opts struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage/mocks"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage/mocks"
 
 	"github.com/stretchr/testify/assert"
 )

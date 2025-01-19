@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage/mocks"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage/mocks"
 )
 
 func TestNewCELFetcher_EmptyRules(t *testing.T) {

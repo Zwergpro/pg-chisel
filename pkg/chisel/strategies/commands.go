@@ -3,11 +3,11 @@ package strategies
 import (
 	"fmt"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
-	"github.com/zwergpro/pg-chisel/internal/chisel/commands"
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
-	"github.com/zwergpro/pg-chisel/internal/config"
-	"github.com/zwergpro/pg-chisel/internal/dump"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/actions"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/commands"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/config"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
 )
 
 type Cmd interface {

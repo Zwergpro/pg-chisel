@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/zwergpro/pg-chisel/internal/contrib/fs"
+	"github.com/zwergpro/pg-chisel/pkg/contrib/fs"
 	"gopkg.in/yaml.v3"
 )
 

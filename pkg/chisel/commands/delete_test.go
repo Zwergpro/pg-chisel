@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/zwergpro/pg-chisel/internal/chisel/actions"
-	"github.com/zwergpro/pg-chisel/internal/dump"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/actions"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
+	"github.com/zwergpro/pg-chisel/pkg/dump/dumpio"
 )
 
 func TestDeleteCmd(t *testing.T) {

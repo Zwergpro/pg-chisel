@@ -3,8 +3,8 @@ package dump
 import (
 	"fmt"
 
-	"github.com/zwergpro/pg-chisel/internal/config"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
+	"github.com/zwergpro/pg-chisel/pkg/config"
+	"github.com/zwergpro/pg-chisel/pkg/dump/dumpio"
 )
 
 // Dump represents a collection of Entities loaded from the dump metadata.

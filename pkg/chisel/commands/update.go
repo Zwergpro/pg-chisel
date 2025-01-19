@@ -7,10 +7,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
 
-	"github.com/zwergpro/pg-chisel/internal/dump"
-	"github.com/zwergpro/pg-chisel/internal/dump/dumpio"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
+	"github.com/zwergpro/pg-chisel/pkg/dump/dumpio"
 )
 
 type UpdateCmd struct {

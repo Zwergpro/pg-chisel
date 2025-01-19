@@ -3,10 +3,10 @@ package actions
 import (
 	"fmt"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
 
 	"github.com/google/cel-go/cel"
-	"github.com/zwergpro/pg-chisel/internal/contrib/cel_extensions"
+	"github.com/zwergpro/pg-chisel/pkg/contrib/cel_extensions"
 )
 
 type CELFilter struct {

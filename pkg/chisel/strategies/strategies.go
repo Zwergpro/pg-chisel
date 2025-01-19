@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/zwergpro/pg-chisel/internal/chisel/storage"
-	"github.com/zwergpro/pg-chisel/internal/config"
-	"github.com/zwergpro/pg-chisel/internal/dump"
+	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
+	"github.com/zwergpro/pg-chisel/pkg/config"
+	"github.com/zwergpro/pg-chisel/pkg/dump"
 )
 
 type ConsistentStrategy struct {
