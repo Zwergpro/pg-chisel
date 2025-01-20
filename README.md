@@ -33,7 +33,7 @@ go install github.com/zwergpro/pg-chisel@latest
 ## Usage
 
 ```bash
-pg-chisel [OPTIONS]
+pg_chisel [OPTIONS]
 ```
 
 ### Options
