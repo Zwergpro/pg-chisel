@@ -18,12 +18,6 @@ signs:
     args: ["--batch", "-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}"]
 
 
-checksum:
-  algorithm: sha256
-  ids:
-    - pg_chisel
-
-
 project_name: pg_chisel
 dist: .bin
 builds:
