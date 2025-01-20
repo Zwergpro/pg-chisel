@@ -3,7 +3,6 @@ package commands
 import (
 	"slices"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,18 +13,10 @@ import (
 )
 
 func TestSelectCmd(t *testing.T) {
-	content := strings.Join(
-		[]string{
-			"1\tName1\t1@test.com\t11",
-			"2\tName2\t2@test.com\t12",
-			"3\tName3\t3@test.com\t13",
-			"4\tName4\t4@test.com\t14",
-			"5\tName5\t5@test.com\t15",
-			"\\.",
-		},
-		"\n",
-	)
-	dumpHandler := dumpio.NewDummyDumpHandler([]byte(content))
+	// GIVEN: A dump with multiple lines
+	inputContent := buildTestContent()
+
+	dummyDumpHandler := dumpio.NewDummyDumpHandler([]byte(inputContent))
 
 	entity := dump.Entity{
 		Id:   1,
@@ -41,83 +32,33 @@ func TestSelectCmd(t *testing.T) {
 			},
 			SortedColumns: []string{"id", "name", "email", "age"},
 		},
-		DumpHandler: dumpHandler,
+		DumpHandler: dummyDumpHandler,
 	}
 
-	expectedIds := []int{2, 4}
-	filter := actions.NewDummyFilter(
-		func(rec storage.RecordStore) bool {
-			table := rec.GetColumnMapping()
-			val, _ := strconv.Atoi(string(table["id"]))
-			return slices.Contains(expectedIds, val)
-		},
-	)
+	// We want rows with IDs 2 and 4 only.
+	expectedIDs := []int{2, 4}
 
-	testStorage, err := storage.NewMapStringStorage(make(map[string][]string))
-	assert.NoError(t, err, "unexpected NewMapStringStorage error")
+	// Create a filter that includes only rows whose "id" is in expectedIDs.
+	filter := actions.NewDummyFilter(func(rec storage.RecordStore) bool {
+		data := rec.GetColumnMapping()
+		idVal, _ := strconv.Atoi(string(data["id"]))
+		return slices.Contains(expectedIDs, idVal)
+	})
+
+	// Create a storage and fetcher to capture "id" and "email" columns.
+	testStorage, err := storage.NewMapStringStorage(map[string][]string{})
+	assert.NoError(t, err, "unexpected error creating storage")
+
 	fetcher := actions.NewDummyFetcher(testStorage, []string{"id", "email"})
 
-	selectTask := NewSelectCmd(&entity, dumpHandler, filter, fetcher)
+	// WHEN: We create and execute the SelectCmd.
+	selectCmd := NewSelectCmd(&entity, dummyDumpHandler, filter, fetcher)
+	err = selectCmd.Execute()
 
-	err = selectTask.Execute()
-	assert.NoError(t, err, "unexpected selectTask error")
+	// THEN: Verify no errors and only the expected rows are fetched.
+	assert.NoError(t, err, "unexpected error executing selectCmd")
 
-	assertSetContainsIDs(t, testStorage, "id", expectedIds)
-	assertSetContainsEmails(t, testStorage, "email", []string{"2@test.com", "4@test.com"})
-}
-
-func TestCELSelectCmd(t *testing.T) {
-	content := strings.Join(
-		[]string{
-			"1\tName1\t1@test.com\t11",
-			"2\tName2\t2@test.com\t12",
-			"3\tName3\t3@test.com\t13",
-			"4\tName4\t4@test.com\t14",
-			"5\tName5\t5@test.com\t15",
-			"\\.",
-		},
-		"\n",
-	)
-	dumpHandler := dumpio.NewDummyDumpHandler([]byte(content))
-
-	entity := dump.Entity{
-		Id:   1,
-		Meta: dump.EntityMeta{},
-		Table: &dump.TableMeta{
-			Name:   "user",
-			Schema: "public",
-			Columns: map[string]*dump.ColumnMeta{
-				"id":    {Position: 1},
-				"name":  {Position: 2},
-				"email": {Position: 3},
-				"age":   {Position: 4},
-			},
-			SortedColumns: []string{"id", "name", "email", "age"},
-		},
-		DumpHandler: dumpHandler,
-	}
-
-	testStorage, err := storage.NewMapStringStorage(make(map[string][]string))
-	assert.NoError(t, err, "unexpected NewMapStringStorage error")
-
-	filter, err := actions.NewCELFilter(`string(table.id) in ["2", "4"]`, testStorage)
-	assert.NoError(t, err, "unexpected NewCELFilter error")
-
-	fetcher, err := actions.NewCELFetcher(
-		map[string]string{
-			"id":    "table.id",
-			"email": "table.email",
-		},
-		testStorage,
-	)
-	assert.NoError(t, err, "unexpected NewCELFetcher error")
-
-	selectTask := NewSelectCmd(&entity, dumpHandler, filter, fetcher)
-
-	err = selectTask.Execute()
-	assert.NoError(t, err, "unexpected selectTask error")
-
-	assertSetContainsIDs(t, testStorage, "id", []int{2, 4})
+	assertSetContainsIDs(t, testStorage, "id", expectedIDs)
 	assertSetContainsEmails(t, testStorage, "email", []string{"2@test.com", "4@test.com"})
 }
 

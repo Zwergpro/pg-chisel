@@ -15,19 +15,9 @@ import (
 )
 
 func TestDeleteCmd(t *testing.T) {
-	content := strings.Join(
-		[]string{
-			"1\tName1\t1@test.com\t11",
-			"2\tName2\t2@test.com\t12",
-			"3\tName3\t3@test.com\t13",
-			"4\tName4\t4@test.com\t14",
-			"5\tName5\t5@test.com\t15",
-			"\\.",
-			"\n",
-		},
-		"\n",
-	)
-	dumpHandler := dumpio.NewDummyDumpHandler([]byte(content))
+	// GIVEN: We have a dump containing five rows.
+	inputContent := buildTestContent()
+	dumpHandler := dumpio.NewDummyDumpHandler([]byte(inputContent))
 
 	entity := dump.Entity{
 		Id:   1,
@@ -46,21 +36,23 @@ func TestDeleteCmd(t *testing.T) {
 		DumpHandler: dumpHandler,
 	}
 
-	filteredIds := []int{2, 4}
-	filter := actions.NewDummyFilter(
-		func(rec storage.RecordStore) bool {
-			table := rec.GetColumnMapping()
-			val, _ := strconv.Atoi(string(table["id"]))
-			return slices.Contains(filteredIds, val)
-		},
-	)
+	// We want to delete rows where "id" is 2 or 4.
+	filteredIDs := []int{2, 4}
+	filter := actions.NewDummyFilter(func(rec storage.RecordStore) bool {
+		tableData := rec.GetColumnMapping()
+		idVal, _ := strconv.Atoi(string(tableData["id"]))
+		return slices.Contains(filteredIDs, idVal)
+	})
 
-	deleteTask := NewDeleteCmd(&entity, dumpHandler, filter)
+	deleteCmd := NewDeleteCmd(&entity, dumpHandler, filter)
 
-	err := deleteTask.Execute()
-	assert.NoError(t, err, "unexpected deleteTask error")
+	// WHEN: We execute the DeleteCmd.
+	err := deleteCmd.Execute()
 
-	expected := strings.Join(
+	// THEN: Rows with "id" in {2,4} should be removed.
+	assert.NoError(t, err, "unexpected delete command error")
+
+	expectedOutput := strings.Join(
 		[]string{
 			"1\tName1\t1@test.com\t11",
 			"3\tName3\t3@test.com\t13",
@@ -70,7 +62,7 @@ func TestDeleteCmd(t *testing.T) {
 		},
 		"\n",
 	)
+	actualOutput := dumpHandler.Writer.Buff.String()
 
-	actual := dumpHandler.Writer.Buff.String()
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, expectedOutput, actualOutput, "output did not match expected rows")
 }
