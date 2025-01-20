@@ -86,8 +86,9 @@ func (t *UpdateCmd) Execute() error {
 		}
 	}
 
-	if _, writeErr := dumpWriter.Write([]byte("\\.\n\n")); writeErr != nil {
-		return fmt.Errorf("end write error: %w", writeErr)
+	endMarker := []byte("\\.\n\n")
+	if _, err := dumpWriter.Write(endMarker); err != nil {
+		return fmt.Errorf("failed to write end marker to dump: %w", err)
 	}
 
 	// Stats

@@ -44,7 +44,13 @@ func buildCommands(
 		case commands.SYNC_CMD:
 			cmd, err := createSyncCmd(conf, &cmdCfg)
 			if err != nil {
-				return nil, fmt.Errorf("can't create update cmd[%d]: %w", idx, err)
+				return nil, fmt.Errorf("can't create sync cmd[%d]: %w", idx, err)
+			}
+			cmds = append(cmds, cmd)
+		case commands.TRUNCATE_CMD:
+			cmd, err := createTruncateCmd(&cmdCfg, meta)
+			if err != nil {
+				return nil, fmt.Errorf("can't create truncate cmd[%d]: %w", idx, err)
 			}
 			cmds = append(cmds, cmd)
 		default:
@@ -142,10 +148,23 @@ func createSyncCmd(conf *config.Config, task *config.Task) (Cmd, error) {
 		return nil, err
 	}
 
-	updateCmd := commands.NewSyncDirCmd(
+	syncCmd := commands.NewSyncDirCmd(
 		syncType,
 		conf.Source,
 		conf.Destination,
 	)
-	return updateCmd, nil
+	return syncCmd, nil
+}
+
+func createTruncateCmd(task *config.Task, meta *dump.Dump) (Cmd, error) {
+	entity, err := meta.GetTable(task.Table)
+	if err != nil {
+		return nil, fmt.Errorf("can't find %s entity in meta", task.Table)
+	}
+
+	truncateCmd := commands.NewTruncateCmd(
+		entity,
+		entity.DumpHandler,
+	)
+	return truncateCmd, nil
 }

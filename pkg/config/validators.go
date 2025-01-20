@@ -3,27 +3,30 @@ package config
 import (
 	"fmt"
 
-	"github.com/google/cel-go/cel"
 	"github.com/zwergpro/pg-chisel/pkg/chisel/storage"
+
+	"github.com/google/cel-go/cel"
 	"github.com/zwergpro/pg-chisel/pkg/contrib/cel_extensions"
 	"golang.org/x/exp/slices"
 )
 
+// ValidateConfig validates the entire configuration.
 func ValidateConfig(conf *Config) error {
-	if err := validatePaths(conf); err != nil {
-		return err
-	}
-	if err := validateFormat(conf); err != nil {
-		return err
-	}
-	if err := validateCompression(conf); err != nil {
-		return err
-	}
-	if err := validateStorage(conf); err != nil {
-		return err
+	validators := []func(*Config) error{
+		validatePaths,
+		validateFormat,
+		validateCompression,
+		validateStorage,
+		validateTasks,
 	}
 
-	return validateTasks(conf)
+	for _, validator := range validators {
+		if err := validator(conf); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func validatePaths(conf *Config) error {
@@ -51,38 +54,35 @@ func validateCompression(conf *Config) error {
 }
 
 func validateStorage(conf *Config) error {
+	// No specific validation implemented.
 	return nil
 }
 
 func validateTasks(conf *Config) error {
 	if len(conf.Tasks) == 0 {
-		return fmt.Errorf("tasks can not be empty")
+		return fmt.Errorf("tasks cannot be empty")
+	}
+
+	cmdValidators := map[string]func(Task) error{
+		"select":   validateSelectCmd,
+		"update":   validateUpdateCmd,
+		"delete":   validateDeleteCmd,
+		"sync":     validateSyncCmd,
+		"truncate": validateTruncateCmd,
 	}
 
 	for idx, task := range conf.Tasks {
 		if task.Cmd == "" {
-			return fmt.Errorf("task[%d] cmd can nnot be empty", idx)
+			return fmt.Errorf("task[%d] cmd cannot be empty", idx)
 		}
 
-		switch task.Cmd {
-		case "select":
-			if err := validateSelectCmd(task); err != nil {
-				return fmt.Errorf("task[%d] error: %w", idx, err)
-			}
-		case "update":
-			if err := validateUpdateCmd(task); err != nil {
-				return fmt.Errorf("task[%d] error: %w", idx, err)
-			}
-		case "delete":
-			if err := validateDeleteCmd(task); err != nil {
-				return fmt.Errorf("task[%d] error: %w", idx, err)
-			}
-		case "sync":
-			if err := validateSyncCmd(task); err != nil {
-				return fmt.Errorf("task[%d] error: %w", idx, err)
-			}
-		default:
+		validator, exists := cmdValidators[task.Cmd]
+		if !exists {
 			return fmt.Errorf("task[%d] unsupported cmd: %s", idx, task.Cmd)
+		}
+
+		if err := validator(task); err != nil {
+			return fmt.Errorf("task[%d] error: %w", idx, err)
 		}
 	}
 
@@ -90,88 +90,36 @@ func validateTasks(conf *Config) error {
 }
 
 func validateSelectCmd(task Task) error {
-	if task.Table == "" {
-		return fmt.Errorf("'table' can not be empty")
-	}
-	if task.Where == "" {
-		return fmt.Errorf("'where' expression can not be empty")
-	}
-
-	mockStorage, _ := storage.NewMapStringStorage(map[string][]string{})
-	err := validateCELExpression(
-		task.Where,
-		cel_extensions.GetArrayFunc(mockStorage),
-		cel_extensions.GetSetFunc(mockStorage),
-	)
-	if err != nil {
-		return fmt.Errorf("'where' has invalid expr: %w", err)
+	if err := validateTableAndWhere(task); err != nil {
+		return err
 	}
 
 	if len(task.Fetch) == 0 {
-		return fmt.Errorf("'fetch' can not be empty")
+		return fmt.Errorf("'fetch' cannot be empty")
 	}
 
-	for key, val := range task.Fetch {
-		if err := validateCELExpression(val); err != nil {
-			return fmt.Errorf("fetch key '%s' has invalid expr: %w", key, err)
-		}
-	}
-
-	return nil
+	return validateExpressionMap(task.Fetch, "fetch")
 }
 
 func validateUpdateCmd(task Task) error {
-	if task.Table == "" {
-		return fmt.Errorf("'table' can not be empty")
-	}
-	if task.Where == "" {
-		return fmt.Errorf("'where' expression can not be empty")
-	}
-	mockStorage, _ := storage.NewMapStringStorage(map[string][]string{})
-	err := validateCELExpression(
-		task.Where,
-		cel_extensions.GetArrayFunc(mockStorage),
-		cel_extensions.GetSetFunc(mockStorage),
-	)
-	if err != nil {
-		return fmt.Errorf("'where' has invalid expr: %w", err)
+	if err := validateTableAndWhere(task); err != nil {
+		return err
 	}
 
 	if len(task.Set) == 0 {
-		return fmt.Errorf("'fetch' can not be empty")
+		return fmt.Errorf("'set' cannot be empty")
 	}
 
-	for key, val := range task.Set {
-		if err := validateCELExpression(val); err != nil {
-			return fmt.Errorf("set key '%s' has invalid expr: %w", key, err)
-		}
-	}
-
-	return nil
+	return validateExpressionMap(task.Set, "set")
 }
 
 func validateDeleteCmd(task Task) error {
-	if task.Table == "" {
-		return fmt.Errorf("'table' can not be empty")
-	}
-	if task.Where == "" {
-		return fmt.Errorf("'where' expression can not be empty")
-	}
-	mockStorage, _ := storage.NewMapStringStorage(map[string][]string{})
-	err := validateCELExpression(
-		task.Where,
-		cel_extensions.GetArrayFunc(mockStorage),
-		cel_extensions.GetSetFunc(mockStorage),
-	)
-	if err != nil {
-		return fmt.Errorf("'where' has invalid expr: %w", err)
-	}
-	return nil
+	return validateTableAndWhere(task)
 }
 
 func validateSyncCmd(task Task) error {
 	if task.Type == "" {
-		return fmt.Errorf("'type' can not be empty")
+		return fmt.Errorf("'type' cannot be empty")
 	}
 	if !slices.Contains([]string{"copy", "hard_link"}, task.Type) {
 		return fmt.Errorf("'type' has invalid value: %s", task.Type)
@@ -179,21 +127,54 @@ func validateSyncCmd(task Task) error {
 	return nil
 }
 
+func validateTruncateCmd(task Task) error {
+	if task.Table == "" {
+		return fmt.Errorf("'table' cannot be empty")
+	}
+	return nil
+}
+
+func validateTableAndWhere(task Task) error {
+	if task.Table == "" {
+		return fmt.Errorf("'table' cannot be empty")
+	}
+	if task.Where == "" {
+		return fmt.Errorf("'where' expression cannot be empty")
+	}
+
+	// Include GetArrayFunc and GetSetFunc for the CEL validation.
+	mockStorage, _ := storage.NewMapStringStorage(map[string][]string{})
+	return validateCELExpression(
+		task.Where,
+		cel_extensions.GetArrayFunc(mockStorage),
+		cel_extensions.GetSetFunc(mockStorage),
+	)
+}
+
+func validateExpressionMap(exprMap map[string]string, context string) error {
+	for key, expr := range exprMap {
+		if err := validateCELExpression(expr); err != nil {
+			return fmt.Errorf("%s key '%s' has invalid expr: %w", context, key, err)
+		}
+	}
+	return nil
+}
+
 func validateCELExpression(expr string, opts ...cel.EnvOption) error {
 	env, err := cel_extensions.NewEnv(opts...)
 	if err != nil {
-		fmt.Printf("Failed to create CEL environment: %v\n", err)
-		return err
+		return fmt.Errorf("failed to create CEL environment: %w", err)
 	}
 
 	ast, issues := env.Parse(expr)
 	if issues != nil && issues.Err() != nil {
-		return issues.Err()
+		return fmt.Errorf("parsing error: %w", issues.Err())
 	}
 
 	_, issues = env.Check(ast)
 	if issues != nil && issues.Err() != nil {
-		return issues.Err()
+		return fmt.Errorf("checking error: %w", issues.Err())
 	}
+
 	return nil
 }

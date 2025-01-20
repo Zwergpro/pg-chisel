@@ -106,6 +106,10 @@ tasks:
   # "copy" missing files from src to dest
   - cmd: "sync"
     type: "hard_link"  # sync type: copy or hard_link
+
+  # remove all table data
+  - cmd: "truncate"
+    table: "users"
 ```
 
 #### Supported values
@@ -227,6 +231,17 @@ and then fetches data from those rows into a global storage map for future tasks
 ```
 
 - **type**: `copy` or `hard_link`. This controls how files are transferred (e.g., physically copying vs. creating filesystem links).
+
+#### `truncate`
+
+**Operation**: Truncates the contents of a specified table in the dump file. This effectively clears the table's data in the output without removing the table structure.
+
+```yaml
+- cmd: "truncate"
+  table: "users"
+```
+
+- **table**: The name of the table to truncate. The structure of the table is preserved in the dump file, but its rows are removed.
 
 ---
 
