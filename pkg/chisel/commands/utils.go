@@ -24,3 +24,10 @@ func readNextLine(reader *bufio.Reader) ([]byte, error) {
 	}
 	return rowLine, nil
 }
+
+func defaultIfEmpty(value, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}

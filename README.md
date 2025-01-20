@@ -237,8 +237,8 @@ and then fetches data from those rows into a global storage map for future tasks
 **Operation**: Truncates the contents of a specified table in the dump file. This effectively clears the table's data in the output without removing the table structure.
 
 ```yaml
-- cmd: "truncate"
-  table: "users"
+  - cmd: "truncate"
+    table: "users"
 ```
 
 - **table**: The name of the table to truncate. The structure of the table is preserved in the dump file, but its rows are removed.

@@ -9,21 +9,32 @@ import (
 )
 
 type TruncateCmd struct {
+	CommandBase
+
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
 }
 
-func NewTruncateCmd(entity *dump.Entity, handler dumpio.DumpHandler) *TruncateCmd {
-	return &TruncateCmd{
+func NewTruncateCmd(
+	entity *dump.Entity,
+	handler dumpio.DumpHandler,
+	opts ...CommandBaseOption,
+) *TruncateCmd {
+	cmd := TruncateCmd{
 		entity:  entity,
 		handler: handler,
 	}
+
+	for _, opt := range opts {
+		opt(&cmd.CommandBase)
+	}
+	return &cmd
 }
 
-func (t *TruncateCmd) Execute() error {
-	log.Printf("[DEBUG] Starting TruncateCmd")
+func (c *TruncateCmd) Execute() error {
+	log.Printf("[INFO] Execute: %s", defaultIfEmpty(c.verboseName, "TruncateCmd"))
 
-	dumpWriter := t.handler.GetWriter()
+	dumpWriter := c.handler.GetWriter()
 	if err := dumpWriter.Open(); err != nil {
 		return fmt.Errorf("failed to open writer: %w", err)
 	}

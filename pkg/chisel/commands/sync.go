@@ -32,6 +32,8 @@ func ParseSyncType(s string) (SyncType, error) {
 // SyncDirCmd describes a command that synchronizes files from a source
 // directory to a destination directory using the specified SyncType.
 type SyncDirCmd struct {
+	CommandBase
+
 	Type SyncType
 	Src  string
 	Dst  string
@@ -41,17 +43,25 @@ func NewSyncDirCmd(
 	syncType SyncType,
 	src string,
 	dst string,
+	opts ...CommandBaseOption,
 ) *SyncDirCmd {
-	return &SyncDirCmd{
+	cmd := SyncDirCmd{
 		Type: syncType,
 		Src:  src,
 		Dst:  dst,
 	}
+
+	for _, opt := range opts {
+		opt(&cmd.CommandBase)
+	}
+	return &cmd
 }
 
 // Execute runs the synchronization process by walking the source directory
 // and syncing each file to the destination.
 func (c *SyncDirCmd) Execute() error {
+	log.Printf("[INFO] Execute: %s", defaultIfEmpty(c.verboseName, "SyncDirCmd"))
+
 	// Validate that source exists and is a directory.
 	srcInfo, err := os.Stat(c.Src)
 	if err != nil {

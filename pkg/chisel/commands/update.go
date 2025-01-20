@@ -14,6 +14,8 @@ import (
 )
 
 type UpdateCmd struct {
+	CommandBase
+
 	entity   *dump.Entity
 	handler  dumpio.DumpHandler
 	filter   RecordFilter
@@ -25,24 +27,31 @@ func NewUpdateCmd(
 	handler dumpio.DumpHandler,
 	filter RecordFilter,
 	modifier RecordModifier,
+	opts ...CommandBaseOption,
 ) *UpdateCmd {
-	return &UpdateCmd{
+	cmd := UpdateCmd{
 		entity:   entity,
 		handler:  handler,
 		filter:   filter,
 		modifier: modifier,
 	}
+
+	for _, opt := range opts {
+		opt(&cmd.CommandBase)
+	}
+	return &cmd
 }
 
-func (t *UpdateCmd) Execute() error {
-	log.Printf("[DEBUG] Starting UpdateCmd")
-	dumpReader := t.handler.GetReader()
+func (c *UpdateCmd) Execute() error {
+	log.Printf("[INFO] Execute: %s", defaultIfEmpty(c.verboseName, "UpdateCmd"))
+
+	dumpReader := c.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
 		return fmt.Errorf("failed to open reader: %w", err)
 	}
 	defer dumpReader.Close()
 
-	dumpWriter := t.handler.GetWriter()
+	dumpWriter := c.handler.GetWriter()
 	if err := dumpWriter.Open(); err != nil {
 		return fmt.Errorf("failed to open writer: %w", err)
 	}
@@ -64,9 +73,9 @@ func (t *UpdateCmd) Execute() error {
 		}
 
 		lineCounter++
-		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, c.entity.Table.SortedColumns)
 
-		matched, err := t.filter.IsMatched(rec)
+		matched, err := c.filter.IsMatched(rec)
 		if err != nil {
 			return fmt.Errorf("filter error: %w", err)
 		}
@@ -74,7 +83,7 @@ func (t *UpdateCmd) Execute() error {
 		if matched {
 			modifiedCounter++
 			// Apply the modification in place
-			if err := t.modifier.Modify(rec); err != nil {
+			if err := c.modifier.Modify(rec); err != nil {
 				return fmt.Errorf("modifier error: %w", err)
 			}
 			// Refresh the raw Row from modified columns

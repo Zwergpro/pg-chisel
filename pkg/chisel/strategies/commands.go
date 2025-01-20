@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/zwergpro/pg-chisel/pkg/chisel/actions"
 	"github.com/zwergpro/pg-chisel/pkg/chisel/commands"
@@ -81,11 +82,24 @@ func createSelectCmd(
 		return nil, err
 	}
 
+	fields := make([]string, 0, len(task.Fetch))
+	for key, val := range task.Fetch {
+		fields = append(fields, fmt.Sprintf("%s as %s", val, key))
+	}
+
 	selectCmd := commands.NewSelectCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
 		fetcher,
+		commands.WithVerboseName(
+			fmt.Sprintf(
+				"SELECT %s FROM %s AS table WHERE %s",
+				strings.Join(fields, ", "),
+				task.Table,
+				task.Where,
+			),
+		),
 	)
 	return selectCmd, nil
 }
@@ -109,6 +123,9 @@ func createDeleteCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
+		commands.WithVerboseName(
+			fmt.Sprintf("DELETE FROM %s AS table WHERE %s", task.Table, task.Where),
+		),
 	)
 	return deleteCmd, nil
 }
@@ -133,11 +150,24 @@ func createUpdateCmd(
 		return nil, err
 	}
 
+	fields := make([]string, 0, len(task.Set))
+	for key, val := range task.Set {
+		fields = append(fields, fmt.Sprintf("%s = %s", key, val))
+	}
+
 	updateCmd := commands.NewUpdateCmd(
 		entity,
 		entity.DumpHandler,
 		filter,
 		modifier,
+		commands.WithVerboseName(
+			fmt.Sprintf(
+				"UPDATE %s AS table SET %s WHERE %s",
+				task.Table,
+				strings.Join(fields, ", "),
+				task.Where,
+			),
+		),
 	)
 	return updateCmd, nil
 }
@@ -152,6 +182,9 @@ func createSyncCmd(conf *config.Config, task *config.Task) (Cmd, error) {
 		syncType,
 		conf.Source,
 		conf.Destination,
+		commands.WithVerboseName(
+			fmt.Sprintf("SYNC FROM %s TO %s", conf.Source, conf.Destination),
+		),
 	)
 	return syncCmd, nil
 }
@@ -165,6 +198,7 @@ func createTruncateCmd(task *config.Task, meta *dump.Dump) (Cmd, error) {
 	truncateCmd := commands.NewTruncateCmd(
 		entity,
 		entity.DumpHandler,
+		commands.WithVerboseName(fmt.Sprintf("TRUNCATE %s", task.Table)),
 	)
 	return truncateCmd, nil
 }

@@ -14,6 +14,8 @@ import (
 )
 
 type DeleteCmd struct {
+	CommandBase
+
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
 	filter  RecordFilter
@@ -23,24 +25,30 @@ func NewDeleteCmd(
 	entity *dump.Entity,
 	handler dumpio.DumpHandler,
 	filter RecordFilter,
+	opts ...CommandBaseOption,
 ) *DeleteCmd {
-	return &DeleteCmd{
+	cmd := DeleteCmd{
 		entity:  entity,
 		handler: handler,
 		filter:  filter,
 	}
+
+	for _, opt := range opts {
+		opt(&cmd.CommandBase)
+	}
+	return &cmd
 }
 
-func (t *DeleteCmd) Execute() error {
-	log.Printf("[DEBUG] Starting DeleteCmd")
+func (c *DeleteCmd) Execute() error {
+	log.Printf("[INFO] Execute: %s", defaultIfEmpty(c.verboseName, "DeleteCmd"))
 
-	dumpReader := t.handler.GetReader()
+	dumpReader := c.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
 		return fmt.Errorf("failed to open reader: %w", err)
 	}
 	defer dumpReader.Close()
 
-	dumpWriter := t.handler.GetWriter()
+	dumpWriter := c.handler.GetWriter()
 	if err := dumpWriter.Open(); err != nil {
 		return fmt.Errorf("failed to open writer: %w", err)
 	}
@@ -62,9 +70,9 @@ func (t *DeleteCmd) Execute() error {
 		}
 
 		lineCounter++
-		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, c.entity.Table.SortedColumns)
 
-		matched, err := t.filter.IsMatched(rec)
+		matched, err := c.filter.IsMatched(rec)
 		if err != nil {
 			return fmt.Errorf("filter error: %w", err)
 		}

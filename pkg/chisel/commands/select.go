@@ -16,6 +16,8 @@ import (
 // SelectCmd reads from a source, applies a filter, and for each matching line
 // it calls a RecordFetcher to do something (e.g., store, print).
 type SelectCmd struct {
+	CommandBase
+
 	entity  *dump.Entity
 	handler dumpio.DumpHandler
 	filter  RecordFilter
@@ -27,19 +29,25 @@ func NewSelectCmd(
 	handler dumpio.DumpHandler,
 	filter RecordFilter,
 	fetcher RecordFetcher,
+	opts ...CommandBaseOption,
 ) *SelectCmd {
-	return &SelectCmd{
+	cmd := SelectCmd{
 		entity:  entity,
 		handler: handler,
 		filter:  filter,
 		fetcher: fetcher,
 	}
+
+	for _, opt := range opts {
+		opt(&cmd.CommandBase)
+	}
+	return &cmd
 }
 
-func (t *SelectCmd) Execute() error {
-	log.Printf("[DEBUG] Starting SelectCmd")
+func (c *SelectCmd) Execute() error {
+	log.Printf("[INFO] Execute: %s", defaultIfEmpty(c.verboseName, "SelectCmd"))
 
-	dumpReader := t.handler.GetReader()
+	dumpReader := c.handler.GetReader()
 	if err := dumpReader.Open(); err != nil {
 		return fmt.Errorf("failed to open reader: %w", err)
 	}
@@ -62,16 +70,16 @@ func (t *SelectCmd) Execute() error {
 		}
 
 		lineCounter++
-		rec := storage.NewRecord(rowLine, t.entity.Table.SortedColumns)
+		rec := storage.NewRecord(rowLine, c.entity.Table.SortedColumns)
 
-		matched, err := t.filter.IsMatched(rec)
+		matched, err := c.filter.IsMatched(rec)
 		if err != nil {
 			return fmt.Errorf("filter error: %w", err)
 		}
 
 		if matched {
 			fetchedCounter++
-			if err := t.fetcher.Fetch(rec); err != nil {
+			if err := c.fetcher.Fetch(rec); err != nil {
 				return fmt.Errorf("fetcher error: %w", err)
 			}
 		}
@@ -85,7 +93,7 @@ func (t *SelectCmd) Execute() error {
 		lineCounter, fetchedCounter, duration.Seconds(), efficiency,
 	)
 
-	if err := t.fetcher.Flush(); err != nil {
+	if err := c.fetcher.Flush(); err != nil {
 		return fmt.Errorf("fetcher flush error: %w", err)
 	}
 	return nil
