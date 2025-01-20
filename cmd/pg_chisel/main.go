@@ -17,11 +17,14 @@ import (
 	"github.com/zwergpro/pg-chisel/pkg/dump"
 )
 
+var Version = "development"
+
 var opts struct {
 	Verbose     bool   `short:"v" long:"verbose" description:"Show verbose information"`
 	Dbg         bool   `long:"dbg" description:"Debug mode"`
 	Config      string `short:"c" long:"config" description:"Config file" default:"chisel.yml"`
 	CheckConfig bool   `long:"check-config" description:"Check config file"`
+	Version     bool   `short:"V" long:"version" description:"show version"`
 }
 
 func main() {
@@ -32,6 +35,11 @@ func main() {
 			log.Printf("[ERROR] cli error: %v", err)
 		}
 		os.Exit(2)
+	}
+
+	if opts.Version {
+		fmt.Printf("pg_chisel %s\n", Version)
+		os.Exit(0)
 	}
 
 	setupLog(opts.Verbose, opts.Dbg)

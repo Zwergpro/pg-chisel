@@ -48,6 +48,8 @@ pg-chisel [OPTIONS]
   Enables debug mode, providing even more detailed output, error messages, and diagnostic information.
 - `-h, --help`\
   Shows the help message with all available command-line options.
+- `-V, --version`\
+  Shows version.
 
 ---
 

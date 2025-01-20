@@ -48,3 +48,5 @@ fabric.properties
 
 /tests/source_dump/*
 /tests/test_dump/*
+# Added by goreleaser init:
+dist/
